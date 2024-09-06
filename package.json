@@ -7,6 +7,7 @@
     "watch": "tsc --watch",
     "dev": "node index.js",
     "updateDB": "node updateDB.js",
+    "makeDB": "node makeDB.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
