@@ -1,3 +1,5 @@
 import fs from 'fs';
 
-console.log(1234);
+console.log(`export default "${
+  fs.readFileSync('0.db').toString('base64')
+}";`);
