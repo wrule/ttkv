@@ -1,5 +1,5 @@
 import fs from 'fs';
-import base64Text from './0.db';
+import base64Text from './1.db';
 
 export default
 function makeDB(file: fs.PathOrFileDescriptor) {
