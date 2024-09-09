@@ -40,6 +40,14 @@ class TTKV {
     if (item?.id) await deleteStmt.run(item.id);
     return item?.value;
   }
+
+  public async shift(name: string) {
+    const selectStmt = this.db.prepare(`SELECT value, id FROM ttkv WHERE key LIKE ? || ':%' ORDER BY id ASC LIMIT 1`);
+    const deleteStmt = this.db.prepare(`DELETE FROM ttkv WHERE id = ?`);
+    const item = await selectStmt.get(name) as { value: string, id: number } | undefined;
+    if (item?.id) await deleteStmt.run(item.id);
+    return item?.value;
+  }
 }
 
 async function main() {
