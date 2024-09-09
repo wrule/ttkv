@@ -52,7 +52,11 @@ class TTKV {
 
 async function main() {
   const tt = new TTKV('3.db');
-  console.log(await tt.pop('queue'));
+  // await tt.push('1', '22');
+  // await tt.push('1', '445');
+  // await tt.push('1', '256');
+  console.log(await tt.pop('1'));
+  // console.log(await tt.pop('queue'));
   // let count = 1;
   // while (true) {
   //   console.log(count);
