@@ -32,16 +32,25 @@ class TTKV {
     await this.set(key, value);
     return key;
   }
+
+  public async pop(name: string) {
+    const selectStmt = this.db.prepare(`SELECT value, id FROM ttkv WHERE key LIKE ? || ':%' ORDER BY id DESC LIMIT 1`);
+    const deleteStmt = this.db.prepare(`DELETE FROM ttkv WHERE id = ?`);
+    const item = await selectStmt.get(name) as { value: string, id: number } | undefined;
+    if (item?.id) await deleteStmt.run(item.id);
+    return item?.value;
+  }
 }
 
 async function main() {
   const tt = new TTKV('3.db');
-  let count = 1;
-  while (true) {
-    console.log(count);
-    await tt.push('queue', count.toString());
-    count++;
-  }
+  console.log(await tt.pop('queue'));
+  // let count = 1;
+  // while (true) {
+  //   console.log(count);
+  //   await tt.push('queue2', count.toString());
+  //   count++;
+  // }
 }
 
 main();
