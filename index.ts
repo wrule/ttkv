@@ -39,7 +39,7 @@ async function main() {
   let count = 1;
   while (true) {
     console.log(count);
-    await tt.set(crypto.randomUUID(), count.toString());
+    await tt.push('queue', count.toString());
     count++;
   }
 }
