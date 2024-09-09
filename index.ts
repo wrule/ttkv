@@ -7,7 +7,7 @@ export default
 class TTKV {
   public constructor(file: string) {
     if (!fs.existsSync(file)) makeDB(file);
-    this.db = sqlite3(file);
+    this.db = sqlite3(file, { fileMustExist: true });
     this.db.pragma('journal_mode = WAL');
   }
 
