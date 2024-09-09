@@ -13,15 +13,12 @@ class TTKV {
 
   private db: Database;
 
-  public set(key: string, value: string) {
+  public async set(key: string, value: string) {
     const insertStmt = this.db.prepare(`INSERT OR IGNORE INTO ttkv (createTime, updateTime, key, value) VALUES (?, ?, ?, ?)`);
     const updateStmt = this.db.prepare(`UPDATE ttkv SET value = ?, updateTime = ? WHERE key = ?`);
     const time = Date.now();
-    const transaction = this.db.transaction((time, key, value) => {
-      insertStmt.run(time, time, key, value);
-      updateStmt.run(value, time, key);
-    });
-    transaction(time, key, value);
+    await insertStmt.run(time, time, key, value);
+    await updateStmt.run(value, time, key);
   }
 
   public async get(key: string) {
