@@ -26,6 +26,12 @@ class TTKV {
     const item = await selectStmt.get(key) as { value: string } | undefined;
     return item?.value;
   }
+
+  public async push(name: string, value: string) {
+    const key = `${name}:${crypto.randomUUID()}`;
+    await this.set(key, value);
+    return key;
+  }
 }
 
 async function main() {
