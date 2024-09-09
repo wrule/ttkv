@@ -1,4 +1,5 @@
 import fs from 'fs';
+import crypto from 'crypto';
 import sqlite3, { Database } from 'better-sqlite3';
 import makeDB from './makeDB';
 
@@ -29,9 +30,12 @@ class TTKV {
 
 async function main() {
   const tt = new TTKV('3.db');
-  await tt.set('鸡毛', '爱你12343');
-  console.log(await tt.get('鸡毛'));
-  
+  let count = 1;
+  while (true) {
+    console.log(count);
+    await tt.set(crypto.randomUUID(), count.toString());
+    count++;
+  }
 }
 
 main();
