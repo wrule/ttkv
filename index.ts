@@ -48,6 +48,11 @@ class TTKV {
     if (item?.id) await deleteStmt.run(item.id);
     return item?.value;
   }
+
+  public async all(name: string) {
+    const selectStmt = this.db.prepare(`SELECT createTime, updateTime, key, value FROM ttkv WHERE key LIKE ? || ':%' ORDER BY createTime DESC`);
+    return await selectStmt.all(name) as { createTime: number, updateTime: number, key: string, value: string }[];
+  }
 }
 
 async function main() {
@@ -55,7 +60,8 @@ async function main() {
   // await tt.push('1', '22');
   // await tt.push('1', '445');
   // await tt.push('1', '256');
-  console.log(await tt.pop('1'));
+  // console.log(await tt.pop('1'));
+  console.log((await tt.all('queue2'))[0]);
   // console.log(await tt.pop('queue'));
   // let count = 1;
   // while (true) {
