@@ -12,9 +12,10 @@ class TTKV {
     if (!fs.existsSync(file)) makeDB(file);
     this.db = sqlite3(file, { fileMustExist: true });
     this.db.pragma('journal_mode = WAL');
-    if (expireTimeMs) setInterval(() => {
-      this.expire(Date.now() - expireTimeMs);
-    }, expireTimeMs).unref();
+    this.expire();
+    setInterval(() => {
+      this.expire();
+    }, 1000).unref();
   }
 
   private db: Database;
