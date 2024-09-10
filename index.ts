@@ -5,7 +5,10 @@ import makeDB from './makeDB';
 
 export default
 class TTKV {
-  public constructor(file: string, expireTimeMs?: number) {
+  public constructor(
+    private file: string,
+    private expireTimeMs?: number,
+  ) {
     if (!fs.existsSync(file)) makeDB(file);
     this.db = sqlite3(file, { fileMustExist: true });
     this.db.pragma('journal_mode = WAL');
@@ -57,9 +60,10 @@ class TTKV {
     return selectStmt.all(name) as { createTime: number, updateTime: number, key: string, value: string }[];
   }
 
-  public expire(time: number) {
+  public expire() {
+    if (!this.expireTimeMs) return;
     const deleteStmt = this.db.prepare(`DELETE FROM ttkv WHERE updateTime <= ?`);
-    deleteStmt.run(time);
+    deleteStmt.run(Date.now() - this.expireTimeMs);
     this.db.exec('VACUUM');
   }
 }
