@@ -53,6 +53,12 @@ class TTKV {
     const selectStmt = this.db.prepare(`SELECT createTime, updateTime, key, value FROM ttkv WHERE key LIKE ? || ':%' ORDER BY createTime DESC`);
     return await selectStmt.all(name) as { createTime: number, updateTime: number, key: string, value: string }[];
   }
+
+  public async expire(time: number) {
+    const deleteStmt = this.db.prepare(`DELETE FROM ttkv WHERE updateTime <= ?`);
+    await deleteStmt.run(time);
+    this.db.exec('VACUUM');
+  }
 }
 
 async function main() {
