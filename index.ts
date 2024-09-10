@@ -64,8 +64,8 @@ class TTKV {
   public expire() {
     if (!this.expireTimeMs) return;
     const deleteStmt = this.db.prepare(`DELETE FROM ttkv WHERE updateTime <= ?`);
-    deleteStmt.run(Date.now() - this.expireTimeMs);
-    this.db.exec('VACUUM');
+    const result = deleteStmt.run(Date.now() - this.expireTimeMs);
+    if (result.changes > 0) this.db.exec('VACUUM');
   }
 }
 
