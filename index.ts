@@ -67,6 +67,14 @@ class TTKV {
     const result = deleteStmt.run(Date.now() - this.expireTimeMs);
     if (result.changes > 0) this.db.exec('VACUUM');
   }
+
+  public wal_clean() {
+    fs.stat(`${this.file}-wal`, (err, stats) => {
+      if (err) return;
+      if (stats.size > 1024 * 1024 * 32)
+        this.db.pragma('wal_checkpoint(RESTART)');
+    });
+  }
 }
 
 async function main() {
