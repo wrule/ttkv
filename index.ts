@@ -10,9 +10,8 @@ class TTKV {
     this.db = sqlite3(file, { fileMustExist: true });
     this.db.pragma('journal_mode = WAL');
     if (expireTimeMs) setInterval(() => {
-      console.log('clean');
       this.expire(Date.now() - expireTimeMs);
-    }, 1000);
+    }, expireTimeMs).unref();
   }
 
   private db: Database;
@@ -68,10 +67,10 @@ class TTKV {
 async function main() {
   const db = new TTKV('4.db', 60000);
   let count = 1;
-  // while (true) {
-  //   await db.push('test', count.toString());
-  //   count++;
-  // }
+  setInterval(() => {
+    // console.log(count);
+    db.push('test', (count++).toString());
+  }, 0);
 }
 
 main();
