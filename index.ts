@@ -5,74 +5,71 @@ import makeDB from './makeDB';
 
 export default
 class TTKV {
-  public constructor(file: string) {
+  public constructor(file: string, expireTimeMs?: number) {
     if (!fs.existsSync(file)) makeDB(file);
     this.db = sqlite3(file, { fileMustExist: true });
     this.db.pragma('journal_mode = WAL');
+    if (expireTimeMs) setInterval(() => {
+      console.log('clean');
+      this.expire(Date.now() - expireTimeMs);
+    }, 1000);
   }
 
   private db: Database;
 
-  public async set(key: string, value: string) {
+  public set(key: string, value: string) {
     const insertStmt = this.db.prepare(`INSERT OR IGNORE INTO ttkv (createTime, updateTime, key, value) VALUES (?, ?, ?, ?)`);
     const updateStmt = this.db.prepare(`UPDATE ttkv SET value = ?, updateTime = ? WHERE key = ?`);
     const time = Date.now();
-    await insertStmt.run(time, time, key, value);
-    await updateStmt.run(value, time, key);
+    insertStmt.run(time, time, key, value);
+    updateStmt.run(value, time, key);
   }
 
-  public async get(key: string) {
+  public get(key: string) {
     const selectStmt = this.db.prepare(`SELECT value FROM ttkv WHERE key = ?`);
-    const item = await selectStmt.get(key) as { value: string } | undefined;
+    const item = selectStmt.get(key) as { value: string } | undefined;
     return item?.value;
   }
 
-  public async push(name: string, value: string) {
+  public push(name: string, value: string) {
     const key = `${name}:${crypto.randomUUID()}`;
-    await this.set(key, value);
+    this.set(key, value);
     return key;
   }
 
-  public async pop(name: string) {
+  public pop(name: string) {
     const selectStmt = this.db.prepare(`SELECT value, id FROM ttkv WHERE key LIKE ? || ':%' ORDER BY id DESC LIMIT 1`);
     const deleteStmt = this.db.prepare(`DELETE FROM ttkv WHERE id = ?`);
-    const item = await selectStmt.get(name) as { value: string, id: number } | undefined;
-    if (item?.id) await deleteStmt.run(item.id);
+    const item = selectStmt.get(name) as { value: string, id: number } | undefined;
+    if (item?.id) deleteStmt.run(item.id);
     return item?.value;
   }
 
-  public async shift(name: string) {
+  public shift(name: string) {
     const selectStmt = this.db.prepare(`SELECT value, id FROM ttkv WHERE key LIKE ? || ':%' ORDER BY id ASC LIMIT 1`);
     const deleteStmt = this.db.prepare(`DELETE FROM ttkv WHERE id = ?`);
-    const item = await selectStmt.get(name) as { value: string, id: number } | undefined;
-    if (item?.id) await deleteStmt.run(item.id);
+    const item = selectStmt.get(name) as { value: string, id: number } | undefined;
+    if (item?.id) deleteStmt.run(item.id);
     return item?.value;
   }
 
-  public async all(name: string) {
+  public all(name: string) {
     const selectStmt = this.db.prepare(`SELECT createTime, updateTime, key, value FROM ttkv WHERE key LIKE ? || ':%' ORDER BY createTime DESC`);
-    return await selectStmt.all(name) as { createTime: number, updateTime: number, key: string, value: string }[];
+    return selectStmt.all(name) as { createTime: number, updateTime: number, key: string, value: string }[];
   }
 
-  public async expire(time: number) {
+  public expire(time: number) {
     const deleteStmt = this.db.prepare(`DELETE FROM ttkv WHERE updateTime <= ?`);
-    await deleteStmt.run(time);
+    deleteStmt.run(time);
     this.db.exec('VACUUM');
   }
 }
 
 async function main() {
-  const tt = new TTKV('3.db');
-  // await tt.push('1', '22');
-  // await tt.push('1', '445');
-  // await tt.push('1', '256');
-  // console.log(await tt.pop('1'));
-  console.log((await tt.all('queue2'))[0]);
-  // console.log(await tt.pop('queue'));
-  // let count = 1;
+  const db = new TTKV('4.db', 60000);
+  let count = 1;
   // while (true) {
-  //   console.log(count);
-  //   await tt.push('queue2', count.toString());
+  //   await db.push('test', count.toString());
   //   count++;
   // }
 }
